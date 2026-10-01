@@ -1,5 +1,10 @@
+#if SWIFT_PACKAGE
 import AIUsageCore
+#endif
 import SwiftUI
+
+private let unusedUsageColor = Color(red: 0.20, green: 0.50, blue: 0.96)
+private let usedUsageColor = Color(red: 0.93, green: 0.20, blue: 0.24)
 
 struct UsageWidgetView: View {
     @ObservedObject var model: UsageViewModel
@@ -29,15 +34,8 @@ struct UsageWidgetView: View {
                 .padding(.horizontal, 18)
                 .padding(.vertical, 13)
         }
-        .frame(width: 340)
-        .background(VisualEffectView(material: .hudWindow, blendingMode: .behindWindow))
-        .background(Color.black.opacity(0.38))
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .strokeBorder(.white.opacity(0.12), lineWidth: 1)
-        }
-        .shadow(color: .black.opacity(0.28), radius: 24, y: 10)
+        .frame(width: 390)
+        .padding(15)
     }
 
     private var header: some View {
@@ -132,7 +130,7 @@ private struct ProviderRow: View {
             } else {
                 HStack(spacing: 18) {
                     ForEach(provider.windows.prefix(2)) { window in
-                        UsageMeter(window: window, accent: accent)
+                        UsageMeter(window: window)
                     }
                 }
                 if let message = provider.statusMessage {
@@ -154,19 +152,19 @@ private struct ProviderRow: View {
 
 private struct UsageMeter: View {
     let window: UsageWindow
-    let accent: Color
 
     var body: some View {
         HStack(spacing: 9) {
             ZStack {
                 Circle()
-                    .stroke(.white.opacity(0.10), lineWidth: 5)
+                    .stroke(unusedUsageColor, lineWidth: 5)
                 Circle()
                     .trim(from: 0, to: window.usedPercent / 100)
-                    .stroke(meterColor, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                    .stroke(usedUsageColor, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                 Text("\(Int(window.usedPercent.rounded()))")
                     .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundStyle(usedUsageColor)
             }
             .frame(width: 42, height: 42)
 
@@ -175,7 +173,7 @@ private struct UsageMeter: View {
                     .font(.system(size: 11, weight: .semibold, design: .rounded))
                 Text("\(Int(window.remainingPercent.rounded()))% left")
                     .font(.system(size: 10, design: .rounded))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(unusedUsageColor)
                 if let reset = window.resetsAt {
                     Text(resetLabel(for: reset))
                         .font(.system(size: 8.5, design: .rounded))
@@ -185,14 +183,6 @@ private struct UsageMeter: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var meterColor: Color {
-        switch window.usedPercent {
-        case 90...: return .red
-        case 75...: return .orange
-        default: return accent
-        }
     }
 
     private func resetLabel(for date: Date) -> String {
@@ -221,19 +211,4 @@ private struct UsageMeter: View {
 
         return "Resets \(day) at \(time)"
     }
-}
-
-private struct VisualEffectView: NSViewRepresentable {
-    let material: NSVisualEffectView.Material
-    let blendingMode: NSVisualEffectView.BlendingMode
-
-    func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
-        view.material = material
-        view.blendingMode = blendingMode
-        view.state = .active
-        return view
-    }
-
-    func updateNSView(_ view: NSVisualEffectView, context: Context) {}
 }

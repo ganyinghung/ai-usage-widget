@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "AIUsageWidget",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v14)],
     products: [
         .library(name: "AIUsageCore", targets: ["AIUsageCore"]),
         .executable(name: "AIUsageWidget", targets: ["AIUsageWidget"]),

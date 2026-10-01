@@ -1,6 +1,8 @@
 import Foundation
 
 public struct SnapshotStore: Sendable {
+    public static let appGroupIdentifier = "YOUR_TEAM_ID.com.yhgan.AIUsageWidget"
+
     public let fileURL: URL
 
     public init(
@@ -13,6 +15,21 @@ public struct SnapshotStore: Sendable {
 
     public init(fileURL: URL) {
         self.fileURL = fileURL
+    }
+
+    public static func appGroup(
+        fileManager: FileManager = .default
+    ) -> SnapshotStore? {
+        guard let container = fileManager.containerURL(
+            forSecurityApplicationGroupIdentifier: appGroupIdentifier
+        ) else {
+            return nil
+        }
+        return SnapshotStore(fileURL: container.appendingPathComponent("usage.json"))
+    }
+
+    public static func preferred() -> SnapshotStore {
+        appGroup() ?? SnapshotStore()
     }
 
     public func load() -> UsageSnapshot? {

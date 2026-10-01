@@ -2,6 +2,31 @@ import XCTest
 @testable import AIUsageCore
 
 final class AIUsageCoreTests: XCTestCase {
+    func testCodexExecutablePrefersBundledPluginOverPathLauncher() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let plugin = home.appendingPathComponent(".codex/plugins/.plugin-appserver/codex-cli/bin/codex")
+        let pathLauncher = home.appendingPathComponent("bin/codex")
+        try FileManager.default.createDirectory(
+            at: plugin.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try FileManager.default.createDirectory(
+            at: pathLauncher.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        try Data().write(to: plugin)
+        try Data().write(to: pathLauncher)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: plugin.path)
+        try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: pathLauncher.path)
+
+        let result = CodexAppServerClient.findExecutable(
+            homeDirectory: home,
+            environment: ["PATH": pathLauncher.deletingLastPathComponent().path]
+        )
+
+        XCTAssertEqual(result?.standardizedFileURL, plugin.standardizedFileURL)
+    }
+
     func testCodexParserFindsLatestRateLimits() throws {
         let input = """
         {"type":"event_msg","payload":{"rate_limits":{"limit_id":"codex","primary":{"used_percent":12,"window_minutes":300,"resets_at":1800000000},"secondary":{"used_percent":34,"window_minutes":10080,"resets_at":1800100000},"plan_type":"plus"}}}

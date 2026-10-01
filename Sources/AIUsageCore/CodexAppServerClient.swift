@@ -116,10 +116,15 @@ public struct CodexAppServerClient {
             candidates.append(URL(fileURLWithPath: configured))
         }
 
+        let pluginAppServer = homeDirectory
+            .appendingPathComponent(".codex/plugins/.plugin-appserver", isDirectory: true)
+
         candidates.append(contentsOf: [
             URL(fileURLWithPath: "/Applications/ChatGPT.app/Contents/Resources/codex"),
             URL(fileURLWithPath: "/Applications/Codex.app/Contents/Resources/codex"),
-            homeDirectory.appendingPathComponent(".codex/plugins/.plugin-appserver/codex"),
+            pluginAppServer.appendingPathComponent("codex-cli/bin/codex"),
+            pluginAppServer.appendingPathComponent("codex-cli/CodexCLI.app/Contents/MacOS/codex"),
+            pluginAppServer.appendingPathComponent("codex"),
         ])
 
         let pathDirectories = (environment["PATH"] ?? "")

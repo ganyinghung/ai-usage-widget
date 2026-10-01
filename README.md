@@ -1,35 +1,58 @@
 # AI Usage Widget for macOS
 
-A small, native desktop card for Claude and OpenAI Codex subscription usage. It shows the current 5-hour and weekly windows, their reset times, and the highest usage percentage in the menu bar.
+A native WidgetKit widget for Claude and OpenAI Codex subscription usage. The small and medium widgets show the current 5-hour and weekly windows plus their reset times, on the desktop or in Notification Center.
 
-![Native macOS](https://img.shields.io/badge/macOS-13%2B-black)
+![Native macOS](https://img.shields.io/badge/macOS-14%2B-black)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-34c759)
+
+The containing app has no menu bar item and no floating desktop panel. It fetches usage, writes a limited snapshot to an App Group container, and tells WidgetKit when fresh data is available.
 
 ## What it reads
 
 - **Codex:** live account-wide limits from the official Codex App Server (`account/rateLimits/read`). If App Server is unavailable, the app falls back to the latest `rate_limits` snapshot under `~/.codex/sessions` or `~/.codex/archived_sessions` and marks it stale.
 - **Claude:** the existing Claude Code OAuth credential from macOS Keychain (or `~/.claude/.credentials.json`) and the `https://api.anthropic.com/api/oauth/usage` endpoint used by Claude Code's `/usage` screen.
 
-Credentials are read only when refreshing. They are never logged or copied into the widget cache. The cache contains only percentages, reset dates, and provider labels at `~/Library/Application Support/AIUsageWidget/usage.json`.
+Credentials are read only by the containing app while refreshing. They are never logged or copied into the widget cache. The shared cache contains only percentages, reset dates, and provider labels.
 
 ## Build and run
 
-Requirements: macOS 13 or newer and Xcode Command Line Tools (or Xcode).
+Requirements: macOS 14 or newer and full Xcode. Open Xcode once and accept its license before building.
 
-For live Codex readings, install/sign in to Codex or the ChatGPT desktop app. The widget discovers the official App Server bundled with either installation; it never reads or stores the Codex access token itself.
+1. Open `AIUsageWidget.xcodeproj`.
+2. Select the `AIUsageWidget` target, open **Signing & Capabilities**, and choose your Development Team.
+3. Do the same for `AIUsageWidgetExtension`.
+4. Confirm both targets use the App Group `YOUR_TEAM_ID.com.yhgan.AIUsageWidget`. This macOS-style identifier starts with the Development Team ID. If the signing team changes, replace that prefix in both entitlement files and in `SnapshotStore.appGroupIdentifier`.
+5. Run the `AIUsageWidget` scheme once. The first Claude refresh may show a Keychain prompt; choose **Always Allow** for unattended updates.
+
+After signing is configured, a release copy can also be built with:
 
 ```sh
 ./scripts/install.sh
 open "dist/AI Usage Widget.app"
 ```
 
-The app stays out of the Dock. Drag the card anywhere on the desktop; use the gauge icon in the menu bar to hide it, show it, refresh, or quit. It refreshes every five minutes. The first Claude refresh may show a macOS Keychain permission prompt—choose **Always Allow** if you want automatic refreshes.
+For command-line signing without saving a team in the project:
 
-For useful readings, sign into each provider at least once. Codex usage from other devices or clients appears on the next five-minute App Server refresh. If a provider is unavailable, the card explains what is missing while the other provider continues to work.
+```sh
+AI_USAGE_DEVELOPMENT_TEAM=YOUR_TEAM_ID ./scripts/install.sh
+```
 
-## Is this a “real” Mac desktop widget?
+## Add it to Notification Center
 
-This version is a lightweight desktop-level `NSPanel`, which is more practical for developer tooling: it can read local CLI files, use Keychain, refresh on demand, and remain visible across Spaces. A WidgetKit extension can also be added for macOS Sonoma's Notification Center/Desktop widget gallery, but WidgetKit cannot directly read arbitrary CLI files or Keychain items; it needs this companion app to fetch and share snapshots.
+1. Click the date and time in the macOS menu bar to open Notification Center.
+2. Click **Edit Widgets** at the bottom.
+3. Search for **AI Usage**.
+4. Choose the small or medium size and add it.
+
+To place the same widget on the desktop, Control-click the desktop and choose **Edit Widgets**.
+
+Keep the containing app running if you want its five-minute live refresh. WidgetKit also requests a cached timeline update every 15 minutes, but macOS ultimately decides when extension timelines refresh. Opening the app triggers an immediate provider refresh and widget reload.
+
+## Data flow
+
+The app and extension share `usage.json` through `YOUR_TEAM_ID.com.yhgan.AIUsageWidget`. The extension never reads provider credentials, starts Codex, or scans session logs.
+
+For useful readings, sign into each provider at least once. Codex usage from other devices or clients appears on the next App Server refresh. If a provider is unavailable, the widget preserves the last successful value and marks it stale.
 
 ## Test
 
@@ -37,4 +60,4 @@ This version is a lightweight desktop-level `NSPanel`, which is more practical f
 swift test
 ```
 
-The project uses only Swift, SwiftUI, AppKit, Foundation, and Security—no third-party packages or telemetry.
+The project uses Swift, SwiftUI, WidgetKit, Foundation, and Security, with no third-party packages or telemetry.

@@ -1,19 +1,25 @@
+#if SWIFT_PACKAGE
 import AIUsageCore
+#endif
 import Foundation
+import WidgetKit
 
 @MainActor
 final class UsageViewModel: ObservableObject {
     @Published private(set) var snapshot: UsageSnapshot
     @Published private(set) var isRefreshing = false
 
-    private let snapshotStore = SnapshotStore()
+    private let snapshotStore = SnapshotStore.preferred()
     private var timer: Timer?
+    private var hasStarted = false
 
     init() {
         snapshot = snapshotStore.load() ?? .empty
     }
 
     func start() {
+        guard !hasStarted else { return }
+        hasStarted = true
         refresh()
         timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
@@ -60,8 +66,8 @@ final class UsageViewModel: ObservableObject {
 
             snapshot = UsageSnapshot(providers: providers)
             try? snapshotStore.save(snapshot)
+            WidgetCenter.shared.reloadTimelines(ofKind: "AIUsageWidget")
             isRefreshing = false
-            NotificationCenter.default.post(name: .usageDidRefresh, object: snapshot)
         }
     }
 
@@ -75,8 +81,4 @@ final class UsageViewModel: ObservableObject {
         do { return .success(try await ClaudeUsageClient().fetch()) }
         catch { return .failure(error) }
     }
-}
-
-extension Notification.Name {
-    static let usageDidRefresh = Notification.Name("AIUsageWidget.usageDidRefresh")
 }
