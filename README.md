@@ -1,6 +1,6 @@
 # AI Usage Widget for macOS
 
-A native WidgetKit widget for Claude and OpenAI Codex subscription usage. The small and medium widgets show the current 5-hour and weekly windows plus their reset times, on the desktop or in Notification Center.
+A native WidgetKit widget for Claude and OpenAI Codex subscription usage. The small, medium, and large widgets show the current 5-hour and weekly windows plus their reset times, on the desktop or in Notification Center.
 
 ![Native macOS](https://img.shields.io/badge/macOS-14%2B-black)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-34c759)
@@ -59,7 +59,7 @@ The command-line Team ID supplies both code signing and the App Group prefix. Xc
 1. Click the date and time in the macOS menu bar to open Notification Center.
 2. Click **Edit Widgets** at the bottom.
 3. Search for **AI Usage**.
-4. Choose the small or medium size and add it.
+4. Choose the small, medium, or large size and add it.
 
 To place the same widget on the desktop, Control-click the desktop and choose **Edit Widgets**.
 
