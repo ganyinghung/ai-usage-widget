@@ -1,7 +1,18 @@
 import Foundation
 
 public struct SnapshotStore: Sendable {
-    public static let appGroupIdentifier = "YOUR_TEAM_ID.com.yhgan.AIUsageWidget"
+    public static var appGroupIdentifier: String? {
+        guard let identifier = Bundle.main.object(
+            forInfoDictionaryKey: "AIUsageAppGroupIdentifier"
+        ) as? String else {
+            return nil
+        }
+        let value = identifier.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty, !value.hasPrefix("."), !value.contains("$(") else {
+            return nil
+        }
+        return value
+    }
 
     public let fileURL: URL
 
@@ -20,6 +31,7 @@ public struct SnapshotStore: Sendable {
     public static func appGroup(
         fileManager: FileManager = .default
     ) -> SnapshotStore? {
+        guard let appGroupIdentifier else { return nil }
         guard let container = fileManager.containerURL(
             forSecurityApplicationGroupIdentifier: appGroupIdentifier
         ) else {

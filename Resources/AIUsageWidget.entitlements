@@ -4,7 +4,7 @@
 <dict>
     <key>com.apple.security.application-groups</key>
     <array>
-        <string>YOUR_TEAM_ID.com.yhgan.AIUsageWidget</string>
+        <string>$(AI_USAGE_APP_GROUP_IDENTIFIER)</string>
     </array>
 </dict>
 </plist>

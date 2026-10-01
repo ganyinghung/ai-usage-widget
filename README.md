@@ -4,6 +4,7 @@ A native WidgetKit widget for Claude and OpenAI Codex subscription usage. The sm
 
 ![Native macOS](https://img.shields.io/badge/macOS-14%2B-black)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-34c759)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 The containing app runs silently without a Dock icon, menu bar item, or automatic window. It fetches usage about every five minutes, writes a limited snapshot to an App Group container, and tells WidgetKit when fresh data is available.
 
@@ -21,7 +22,7 @@ Requirements: macOS 14 or newer and full Xcode. Open Xcode once and accept its l
 1. Open `AIUsageWidget.xcodeproj`.
 2. Select the `AIUsageWidget` target, open **Signing & Capabilities**, and choose your Development Team.
 3. Do the same for `AIUsageWidgetExtension`.
-4. Confirm both targets use the App Group `YOUR_TEAM_ID.com.yhgan.AIUsageWidget`. This macOS-style identifier starts with the Development Team ID. If the signing team changes, replace that prefix in both entitlement files and in `SnapshotStore.appGroupIdentifier`.
+4. Keep both targets on the same Development Team. The project derives their shared App Group automatically as `$(DEVELOPMENT_TEAM).com.yhgan.AIUsageWidget`; no personal Team ID is stored in the repository.
 5. Run the `AIUsageWidget` scheme once. The app starts without opening a window. The first Claude refresh may show a Keychain prompt; choose **Always Allow** for unattended updates.
 
 To open the status window while developing, click an installed widget or run:
@@ -32,10 +33,10 @@ open "aiusagewidget://status"
 
 ## Install and run without Xcode
 
-After signing is configured, build a Release copy and install it in `/Applications`:
+Build a Release copy with your Team ID and install it in `/Applications`:
 
 ```sh
-./scripts/install.sh
+AI_USAGE_DEVELOPMENT_TEAM=YOUR_TEAM_ID ./scripts/install.sh
 /usr/bin/ditto "dist/AI Usage Widget.app" "/Applications/AI Usage Widget.app"
 open -gj "/Applications/AI Usage Widget.app"
 ```
@@ -51,11 +52,7 @@ The normal controls are:
 
 Opening the application itself starts the updater silently; it intentionally does not show a window.
 
-For command-line signing without saving a team in the project, first update the App Group identifier for that team as described above, then run:
-
-```sh
-AI_USAGE_DEVELOPMENT_TEAM=YOUR_TEAM_ID ./scripts/install.sh
-```
+The command-line Team ID supplies both code signing and the App Group prefix. Xcode users can select their team in **Signing & Capabilities** instead.
 
 ## Add it to Notification Center
 
@@ -72,7 +69,7 @@ If the containing app is not running, the widget remains visible and shows the l
 
 ## Data flow
 
-The app and extension share `usage.json` through `YOUR_TEAM_ID.com.yhgan.AIUsageWidget`. The containing app owns provider access and refreshes. The extension only reads this snapshot; it never reads provider credentials, starts Codex, or scans session logs.
+The app and extension share `usage.json` through the build-time App Group `$(DEVELOPMENT_TEAM).com.yhgan.AIUsageWidget`. The containing app owns provider access and refreshes. The extension only reads this snapshot; it never reads provider credentials, starts Codex, or scans session logs.
 
 For useful readings, sign into each provider at least once. Codex usage from other devices or clients appears on the next App Server refresh. If a provider is unavailable, the widget preserves the last successful value and marks it stale.
 
@@ -82,4 +79,4 @@ For useful readings, sign into each provider at least once. Codex usage from oth
 swift test
 ```
 
-The project uses Swift, SwiftUI, WidgetKit, Foundation, and Security, with no third-party packages or telemetry.
+The project uses Swift, SwiftUI, WidgetKit, Foundation, and Security, with no third-party packages or telemetry. It is available under the [MIT License](LICENSE).
