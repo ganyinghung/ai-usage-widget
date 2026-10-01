@@ -5,7 +5,7 @@ A native WidgetKit widget for Claude and OpenAI Codex subscription usage. The sm
 ![Native macOS](https://img.shields.io/badge/macOS-14%2B-black)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-34c759)
 
-The containing app has no menu bar item and no floating desktop panel. It fetches usage, writes a limited snapshot to an App Group container, and tells WidgetKit when fresh data is available.
+The containing app runs silently without a Dock icon, menu bar item, or automatic window. It fetches usage, writes a limited snapshot to an App Group container, and tells WidgetKit when fresh data is available.
 
 ## What it reads
 
@@ -28,8 +28,11 @@ After signing is configured, a release copy can also be built with:
 
 ```sh
 ./scripts/install.sh
-open "dist/AI Usage Widget.app"
+ditto "dist/AI Usage Widget.app" "/Applications/AI Usage Widget.app"
+open "/Applications/AI Usage Widget.app"
 ```
+
+The installed app registers itself as a login item on first launch and then runs silently. Click the widget to open its status window; closing that window leaves background refreshes running. Use the power button in the status window to quit the background app.
 
 For command-line signing without saving a team in the project:
 
@@ -46,7 +49,7 @@ AI_USAGE_DEVELOPMENT_TEAM=YOUR_TEAM_ID ./scripts/install.sh
 
 To place the same widget on the desktop, Control-click the desktop and choose **Edit Widgets**.
 
-Keep the containing app running if you want its five-minute live refresh. WidgetKit also requests a cached timeline update every 15 minutes, but macOS ultimately decides when extension timelines refresh. Opening the app triggers an immediate provider refresh and widget reload.
+Keep the containing app running if you want its five-minute live refresh. WidgetKit also requests a cached timeline update every 15 minutes, but macOS ultimately decides when extension timelines refresh. Launching the background app triggers an immediate provider refresh and widget reload. Clicking the widget opens the optional status window.
 
 ## Data flow
 

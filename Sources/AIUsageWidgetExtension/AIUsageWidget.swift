@@ -49,6 +49,7 @@ struct AIUsageWidgetView: View {
             }
         }
         .containerBackground(.fill.tertiary, for: .widget)
+        .widgetURL(URL(string: "aiusagewidget://status"))
     }
 
     private var compactView: some View {

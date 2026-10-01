@@ -9,6 +9,7 @@ private let usedUsageColor = Color(red: 0.93, green: 0.20, blue: 0.24)
 struct UsageWidgetView: View {
     @ObservedObject var model: UsageViewModel
     let refresh: () -> Void
+    let quit: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -63,6 +64,15 @@ struct UsageWidgetView: View {
             .buttonStyle(.plain)
             .disabled(model.isRefreshing)
             .help("Refresh usage")
+
+            Button(action: quit) {
+                Image(systemName: "power")
+                    .font(.system(size: 12, weight: .semibold))
+                    .frame(width: 30, height: 30)
+                    .background(.white.opacity(0.08), in: Circle())
+            }
+            .buttonStyle(.plain)
+            .help("Quit background updates")
         }
     }
 
