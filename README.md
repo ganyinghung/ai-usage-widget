@@ -5,7 +5,7 @@ A native WidgetKit widget for Claude and OpenAI Codex subscription usage. The sm
 ![Native macOS](https://img.shields.io/badge/macOS-14%2B-black)
 ![No dependencies](https://img.shields.io/badge/dependencies-none-34c759)
 
-The containing app runs silently without a Dock icon, menu bar item, or automatic window. It fetches usage, writes a limited snapshot to an App Group container, and tells WidgetKit when fresh data is available.
+The containing app runs silently without a Dock icon, menu bar item, or automatic window. It fetches usage about every five minutes, writes a limited snapshot to an App Group container, and tells WidgetKit when fresh data is available.
 
 ## What it reads
 
@@ -14,7 +14,7 @@ The containing app runs silently without a Dock icon, menu bar item, or automati
 
 Credentials are read only by the containing app while refreshing. They are never logged or copied into the widget cache. The shared cache contains only percentages, reset dates, and provider labels.
 
-## Build and run
+## Build in Xcode
 
 Requirements: macOS 14 or newer and full Xcode. Open Xcode once and accept its license before building.
 
@@ -22,19 +22,36 @@ Requirements: macOS 14 or newer and full Xcode. Open Xcode once and accept its l
 2. Select the `AIUsageWidget` target, open **Signing & Capabilities**, and choose your Development Team.
 3. Do the same for `AIUsageWidgetExtension`.
 4. Confirm both targets use the App Group `YOUR_TEAM_ID.com.yhgan.AIUsageWidget`. This macOS-style identifier starts with the Development Team ID. If the signing team changes, replace that prefix in both entitlement files and in `SnapshotStore.appGroupIdentifier`.
-5. Run the `AIUsageWidget` scheme once. The first Claude refresh may show a Keychain prompt; choose **Always Allow** for unattended updates.
+5. Run the `AIUsageWidget` scheme once. The app starts without opening a window. The first Claude refresh may show a Keychain prompt; choose **Always Allow** for unattended updates.
 
-After signing is configured, a release copy can also be built with:
+To open the status window while developing, click an installed widget or run:
+
+```sh
+open "aiusagewidget://status"
+```
+
+## Install and run without Xcode
+
+After signing is configured, build a Release copy and install it in `/Applications`:
 
 ```sh
 ./scripts/install.sh
-ditto "dist/AI Usage Widget.app" "/Applications/AI Usage Widget.app"
-open "/Applications/AI Usage Widget.app"
+/usr/bin/ditto "dist/AI Usage Widget.app" "/Applications/AI Usage Widget.app"
+open -gj "/Applications/AI Usage Widget.app"
 ```
 
-The installed app registers itself as a login item on first launch and then runs silently. Click the widget to open its status window; closing that window leaves background refreshes running. Use the power button in the status window to quit the background app.
+Quit an older installed copy before replacing it. The installed app launches silently and registers itself as a login item on its first launch from `/Applications` or `~/Applications`. macOS may list it under **System Settings → General → Login Items & Extensions**.
 
-For command-line signing without saving a team in the project:
+The normal controls are:
+
+- Click the widget, or run `open "aiusagewidget://status"`, to open the status window.
+- Close the status window to keep background refreshes running.
+- Use the power button in the status window to stop the current background process.
+- Disable **AI Usage Widget** in Login Items & Extensions if it should not start at the next login.
+
+Opening the application itself starts the updater silently; it intentionally does not show a window.
+
+For command-line signing without saving a team in the project, first update the App Group identifier for that team as described above, then run:
 
 ```sh
 AI_USAGE_DEVELOPMENT_TEAM=YOUR_TEAM_ID ./scripts/install.sh
@@ -51,9 +68,11 @@ To place the same widget on the desktop, Control-click the desktop and choose **
 
 Keep the containing app running if you want its five-minute live refresh. WidgetKit also requests a cached timeline update every 15 minutes, but macOS ultimately decides when extension timelines refresh. Launching the background app triggers an immediate provider refresh and widget reload. Clicking the widget opens the optional status window.
 
+If the containing app is not running, the widget remains visible and shows the last saved snapshot. The extension does not contact either provider itself, so usage values will not become current again until the background app launches.
+
 ## Data flow
 
-The app and extension share `usage.json` through `YOUR_TEAM_ID.com.yhgan.AIUsageWidget`. The extension never reads provider credentials, starts Codex, or scans session logs.
+The app and extension share `usage.json` through `YOUR_TEAM_ID.com.yhgan.AIUsageWidget`. The containing app owns provider access and refreshes. The extension only reads this snapshot; it never reads provider credentials, starts Codex, or scans session logs.
 
 For useful readings, sign into each provider at least once. Codex usage from other devices or clients appears on the next App Server refresh. If a provider is unavailable, the widget preserves the last successful value and marks it stale.
 

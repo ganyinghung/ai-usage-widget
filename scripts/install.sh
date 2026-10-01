@@ -39,4 +39,8 @@ fi
 /usr/bin/ditto "$built_app" "$app_dir"
 
 echo "Built: $app_dir"
-echo "Open it once, then add AI Usage from Notification Center's widget gallery."
+echo "Next steps:"
+echo "  1. Quit an older installed copy, if one is running."
+echo "  2. /usr/bin/ditto \"$app_dir\" \"/Applications/AI Usage Widget.app\""
+echo "  3. open -gj \"/Applications/AI Usage Widget.app\""
+echo "The installed app runs silently; click its widget to open the status window."
