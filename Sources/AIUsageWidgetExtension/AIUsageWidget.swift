@@ -101,10 +101,12 @@ struct AIUsageWidgetView: View {
                     design: .rounded
                 ))
             Spacer()
-            Text(entry.snapshot.generatedAt, style: .relative)
-                .font(.system(size: family == .systemLarge ? 11 : 9.5, design: .rounded))
-                .foregroundStyle(.tertiary)
-                .lineLimit(1)
+            if family != .systemSmall {
+                Text(entry.snapshot.generatedAt, style: .relative)
+                    .font(.system(size: family == .systemLarge ? 11 : 9.5, design: .rounded))
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(1)
+            }
         }
     }
 
@@ -255,29 +257,22 @@ private struct MiniWindowView: View {
     let window: UsageWindow
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 3) {
-                Text(shortLabel)
-                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
-                Spacer(minLength: 1)
-                Text("\(Int(window.usedPercent.rounded()))%")
-                    .font(.system(size: 9.5, weight: .semibold, design: .rounded))
-                    .foregroundStyle(usedUsageColor)
-            }
-            UsageBar(usedPercent: window.usedPercent)
-            if let reset = window.resetsAt {
-                Text(resetLabel(for: reset))
-                    .font(.system(size: 8.5, design: .rounded))
-                    .foregroundStyle(.tertiary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-            }
+        HStack(alignment: .firstTextBaseline, spacing: 3) {
+            Text(shortLabel)
+                .font(.system(size: 9.5, weight: .medium, design: .rounded))
+            Spacer(minLength: 1)
+            Text("\(Int(window.usedPercent.rounded()))%")
+                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(usedUsageColor)
+                .fixedSize(horizontal: true, vertical: false)
+                .layoutPriority(1)
         }
         .frame(maxWidth: .infinity)
     }
 
     private var shortLabel: String {
-        window.label == "Weekly" ? "Week" : window.label
+        window.label == "Weekly" ? "Wk" : window.label
     }
 }
 
@@ -296,7 +291,7 @@ private struct MediumWindowView: View {
             }
             UsageBar(usedPercent: window.usedPercent)
             if let reset = window.resetsAt {
-                Text("Resets \(resetLabel(for: reset))")
+                Text(resetLabel(for: reset))
                     .font(.system(size: 9.5, design: .rounded))
                     .foregroundStyle(.tertiary)
                     .lineLimit(1)
